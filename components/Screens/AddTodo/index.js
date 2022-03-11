@@ -13,7 +13,7 @@ const db = async()=>{
     const realm =await Realm.open({
         path:'do-it',
         schema:[Todos],
-        schemaVersion: 20
+        schemaVersion: 21
     })
     return realm
 }
@@ -24,6 +24,7 @@ export default class AddTodo extends Component {
    
     state = {
         date:new Date(),
+        title:''
     }
     
     InsertTodo = async()=>{
@@ -36,9 +37,10 @@ export default class AddTodo extends Component {
                     _id:ObjectID(),
                     created_by:parse._id,
                     priority:this.state.priority,
-                    expected_date:this.state.date.toLocaleString()
+                    expected_date:this.state.date.toLocaleString(),
+                    title:this.state.title
                 })
-                this.setState({priority:''})
+                this.setState({priority:'',title:''})
                Alert.alert("Inserted Successfully")
             })
         })
@@ -60,6 +62,16 @@ export default class AddTodo extends Component {
                 <View style={styles.text_input}>
                 <MaterialIcons name="work" style={styles.phoneImageStyle} color="white" size={25}/>
                 <TextInput placeholder="Priority" onChangeText={(val)=>this.setState({priority:val})} value={this.state.priority}  selectionColor="white"  placeholderTextColor="#DBDBDB" style={{flex:1,color:'white'}} 
+                />
+
+           
+                </View>
+
+                
+
+                <View style={styles.text_input}>
+                <MaterialIcons name="title" style={styles.phoneImageStyle} color="white" size={25}/>
+                <TextInput placeholder="Title" onChangeText={(val)=>this.setState({title:val})} value={this.state.title}  selectionColor="white"  placeholderTextColor="#DBDBDB" style={{flex:1,color:'white'}} 
                 />
 
            

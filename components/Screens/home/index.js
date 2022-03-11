@@ -15,7 +15,7 @@ const db = async()=>{
     const realm =await Realm.open({
         path:'do-it',
         schema:[Todos],
-        schemaVersion: 20
+        schemaVersion: 21
     })
     return realm
 }
@@ -101,6 +101,9 @@ export default class Home extends Component {
                {this.state.todos.map((data,index)=>{
                    return <Swipeable renderLeftActions={()=>this.Swipe(data._id)} key={index}>
                        <View  style={styles.todoContainer}>
+                   <Text style={{left:5,fontSize:18}}>{data.title}</Text>
+                   <View style={{borderColor:'white',borderWidth:.2,marginTop:2}}></View>
+
                    <View style={{flexDirection:'row'}}>
                    <MaterialIcons name="work" color="white" size={20}/>
                    <Text style={{left:10}}>{data.priority}</Text>
@@ -160,7 +163,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
       
         alignItems:'center',
-        height:70,
+        height:100,
         marginTop:20,
      
         justifyContent: 'center',
