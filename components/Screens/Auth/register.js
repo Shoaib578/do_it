@@ -11,16 +11,23 @@ import Realm from 'realm';
 var ObjectID = require("bson-objectid");
 
 
-
+const app = new Realm.App({id:'do-it-ioxms',timeout: 10000})
+const credentials = Realm.Credentials.anonymous(); 
 const db = async()=>{
-    const realm =await Realm.open({
-        path:'do-it.realm',
-        schema:[Users],
-        schemaVersion: 17
-        
-    })
-    return realm
+    const loggedInUser = await app.logIn(credentials);
+    const configuration = {
+        schema: [Users], 
+        sync: {
+          user: app.currentUser,
+          partitionValue: "622890eae210279e9fccc51e", 
+        }
+      };
+      const realm = Realm.open(configuration)
+      return realm
 }
+
+
+
 export default class Register extends Component {
     state = {
         phone_no:"",
@@ -54,7 +61,7 @@ export default class Register extends Component {
     SignUp = async()=>{
 
        await db().then(res=>{
-        console.log(res.objects("Users"))
+        
        let is_exist= res.objects("Users").filtered(`phone_number== '${this.state.phone_no}'`).length
       
 
@@ -79,7 +86,7 @@ export default class Register extends Component {
     
       .catch(err=>{
             Alert.alert("Something Went Wrong")
-            // console.log(err)
+            console.log(err)
          })
     }
 

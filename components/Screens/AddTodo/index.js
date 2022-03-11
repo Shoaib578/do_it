@@ -9,14 +9,32 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 var ObjectID = require("bson-objectid");
 import DatePicker from 'react-native-date-picker'
 
+
+const app = new Realm.App({id:'do-it-ioxms',timeout: 10000})
+const credentials = Realm.Credentials.anonymous(); 
 const db = async()=>{
-    const realm =await Realm.open({
-        path:'do-it',
-        schema:[Todos],
-        schemaVersion: 21
-    })
-    return realm
+    const loggedInUser = await app.logIn(credentials);
+    const configuration = {
+        schema: [Todos], 
+        sync: {
+          user: app.currentUser,
+          partitionValue: "622890eae210279e9fccc51e", 
+        }
+      };
+      const realm = Realm.open(configuration)
+      return realm
 }
+
+
+
+// const db_locale = async()=>{
+//     const realm =await Realm.open({
+//         path:'do-it',
+//         schema:[Todos],
+//         schemaVersion: 21
+//     })
+//     return realm
+// }
 
 
 
@@ -30,10 +48,10 @@ export default class AddTodo extends Component {
     InsertTodo = async()=>{
         const user = await AsyncStorage.getItem('user')
         const parse = JSON.parse(user)
-       
+        
         db().then(res=>{
-            res.write(()=>{
-                res.create('Todos',{
+            res.write(async()=>{
+              await  res.create("Todos",{
                     _id:ObjectID(),
                     created_by:parse._id,
                     priority:this.state.priority,

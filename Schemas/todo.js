@@ -1,15 +1,17 @@
 
 const Todos = {
     name:"Todos",
-    primaryKey:'_id',
     properties:{
         _id:'objectId',
-        title:{type:'string'},
+        title:'string',
 
-        created_by:{type:'string'},
-        priority :{type:'string'},
-        expected_date:{type:'string'}
+        created_by:'string',
+        priority :'string',
+        expected_date:'string'
     },
+
+    primaryKey:'_id',
+
 }
 
 

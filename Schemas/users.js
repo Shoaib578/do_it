@@ -1,12 +1,12 @@
 const Users = {
+  
     name:"Users",
-    primaryKey:'_id',
-
     properties: {
         _id:'objectId',
-        phone_number:{type:'string'},
-        password:{type:'string'}
+        phone_number:'string',
+        password:'string'
     },
+    primaryKey:'_id'
    
 
 }
