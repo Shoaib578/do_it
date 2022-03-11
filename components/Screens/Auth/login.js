@@ -10,18 +10,20 @@ import Foundation from 'react-native-vector-icons/Foundation'
 import Users from '../../../Schemas/users';
 
 
-const app = new Realm.App({id:'do-it-ioxms',timeout: 10000})
+const app = new Realm.App({id:'do-it-ioxms'})
 const credentials = Realm.Credentials.anonymous(); 
 const db = async()=>{
     const loggedInUser = await app.logIn(credentials);
     const configuration = {
         schema: [Users], 
+     
+
         sync: {
           user: app.currentUser,
           partitionValue: "622890eae210279e9fccc51e", 
         }
       };
-      const realm = Realm.open(configuration)
+      const realm =await Realm.open(configuration)
       return realm
 }
 
@@ -100,7 +102,7 @@ export default class Login extends Component {
     }
 
    
-
+   
     render(){
         return(
             <ScrollView style={styles.container}>

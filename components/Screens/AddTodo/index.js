@@ -16,6 +16,8 @@ const db = async()=>{
     const loggedInUser = await app.logIn(credentials);
     const configuration = {
         schema: [Todos], 
+       
+
         sync: {
           user: app.currentUser,
           partitionValue: "622890eae210279e9fccc51e", 
@@ -63,6 +65,7 @@ export default class AddTodo extends Component {
             })
         })
         .catch(err=>{
+            console.log(err)
             Alert.alert("Something Went Wrong")
         })
     }

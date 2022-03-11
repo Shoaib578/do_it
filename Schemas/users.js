@@ -3,8 +3,8 @@ const Users = {
     name:"Users",
     properties: {
         _id:'objectId',
-        phone_number:'string',
-        password:'string'
+        phone_number:{type:'string'},
+        password:{type:'string'}
     },
     primaryKey:'_id'
    

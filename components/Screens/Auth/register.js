@@ -14,17 +14,21 @@ var ObjectID = require("bson-objectid");
 const app = new Realm.App({id:'do-it-ioxms',timeout: 10000})
 const credentials = Realm.Credentials.anonymous(); 
 const db = async()=>{
-    const loggedInUser = await app.logIn(credentials);
+     await app.logIn(credentials);
     const configuration = {
         schema: [Users], 
+      
         sync: {
           user: app.currentUser,
           partitionValue: "622890eae210279e9fccc51e", 
         }
       };
-      const realm = Realm.open(configuration)
+      const realm =await Realm.open(configuration)
+     
       return realm
 }
+
+
 
 
 
@@ -90,9 +94,16 @@ export default class Register extends Component {
          })
     }
 
-  
+    RemoveAllusers = async()=>{
+        await db().then(res=>{
+            res.write(()=>{
+                res.deleteAll()
+                console.log("Deleted")
+            })
+        })
+    }
 
-    
+  
     render(){
         return(
             <ScrollView style={styles.container}>
