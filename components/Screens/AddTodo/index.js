@@ -70,7 +70,7 @@ export default class AddTodo extends Component {
                 backgroundColor:"#57b5b6",
                 borderRadius:10,
             }} onDateChange={(date)=>{
-                        this.setState({data:date})
+                        this.setState({date:date})
                         console.log(date)
                     }} />
  <TouchableOpacity onPress={this.InsertTodo} style={styles.submit_btn}>
