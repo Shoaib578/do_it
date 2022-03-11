@@ -11,6 +11,7 @@ import Users from '../../../Schemas/users';
 
 
 
+
 const db = async()=>{
     const realm =await Realm.open({
         path:'do-it.realm',
@@ -31,13 +32,34 @@ export default class Login extends Component {
     
 
      
-   
+    validate = ()=>{
+        let phone_no_error = ''
+        let password_error = ''
+        
+        if(validator.isMobilePhone(this.state.phone_no) == false){
+            phone_no_error = 'Invalid Phone Number'
+            Alert.alert("Invalid Phone Number")
+           
+        }
+
+        if(this.state.password.length<6){
+            password_error = 'Password Must Be at least 6 characters'
+            Alert.alert("Password Must Be Atleast 6 characters")
+            
+        }
+
+        if(phone_no_error || password_error){
+            return false
+        }
+
+        return true
+    }
 
     Login =async ()=>{
         await db().then(res=>{
         let is_exist= res.objects("Users").filtered(`phone_number== '${this.state.phone_no}' && password== '${this.state.password}'`).length
         let user = res.objects("Users").filtered(`phone_number== '${this.state.phone_no}' && password== '${this.state.password}'`)
-        if(this.state.phone_no.length>0 && this.state.password.length>0){
+        
 
         if(is_exist == 1){
          
@@ -53,9 +75,7 @@ export default class Login extends Component {
        }else{
         Alert.alert("Invalid Phone Number or Password")
        }
-    }else{
-        Alert.alert("Fields are required")
-    }
+    
 
         })
         .catch(err=>{
@@ -93,7 +113,13 @@ export default class Login extends Component {
 
                 {this.state.is_loading?<ActivityIndicator size="large" color="white" style={{ alignSelf: 'center' }}/>:null}
 
-                <TouchableOpacity onPress={this.Login} style={styles.submit_btn} >
+                <TouchableOpacity onPress={()=>{
+                    
+                    let is_validated = this.validate()
+                    if(is_validated){
+                        this.Login() 
+                    }
+                    }} style={styles.submit_btn} >
                     
                     <Text style={{ fontSize:16,fontWeight:'bold',color:'#57b5b6'}}>Sign In</Text>
                 </TouchableOpacity>

@@ -7,6 +7,7 @@ import Entypo from 'react-native-vector-icons/Entypo'
 import Foundation from 'react-native-vector-icons/Foundation'
 import Users from '../../../Schemas/users'
 import Realm from 'realm';
+
 var ObjectID = require("bson-objectid");
 
 
@@ -25,6 +26,29 @@ export default class Register extends Component {
         phone_no:"",
         password:"",
         is_loading:false
+    }   
+
+    validate = ()=>{
+        let phone_no_error = ''
+        let password_error = ''
+        
+        if(validator.isMobilePhone(this.state.phone_no) == false){
+            phone_no_error = 'Invalid Phone Number'
+            Alert.alert("Invalid Phone Number")
+           
+        }
+
+        if(this.state.password.length<6){
+            password_error = 'Password Must Be at least 6 characters'
+            Alert.alert("Password Must Be Atleast 6 characters")
+            
+        }
+
+        if(phone_no_error || password_error){
+            return false
+        }
+
+        return true
     }
 
     SignUp = async()=>{
@@ -32,7 +56,7 @@ export default class Register extends Component {
        await db().then(res=>{
         console.log(res.objects("Users"))
        let is_exist= res.objects("Users").filtered(`phone_number== '${this.state.phone_no}'`).length
-       if(this.state.phone_no.length>0 && this.state.password.length>0){
+      
 
        if(is_exist == 1){
         Alert.alert("Phone Number Already Exist Please Try Another One")
@@ -49,9 +73,7 @@ export default class Register extends Component {
         Alert.alert("Registered Successfully")
         this.setState({phone_no:'',password:''})
     }
-}else{
-    Alert.alert("Fields are required")
-}
+
 
        })
     
@@ -92,7 +114,12 @@ export default class Register extends Component {
 
                 {this.state.is_loading?<ActivityIndicator size="large" color="white" style={{ alignSelf: 'center' }}/>:null}
 
-                <TouchableOpacity onPress={this.SignUp} style={styles.submit_btn} >
+                <TouchableOpacity onPress={()=>{
+                    let is_validated = this.validate()
+                    if(is_validated){
+                        this.SignUp()
+                    }
+                }} style={styles.submit_btn} >
                     
                     <Text style={{ fontSize:16,fontWeight:'bold',color:'#57b5b6'}}>Sign Up</Text>
                 </TouchableOpacity>
