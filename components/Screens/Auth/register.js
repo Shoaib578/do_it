@@ -32,6 +32,8 @@ export default class Register extends Component {
        await db().then(res=>{
         console.log(res.objects("Users"))
        let is_exist= res.objects("Users").filtered(`phone_number== '${this.state.phone_no}'`).length
+       if(this.state.phone_no.length>0 && this.state.password.length>0){
+
        if(is_exist == 1){
         Alert.alert("Phone Number Already Exist Please Try Another One")
         
@@ -47,6 +49,10 @@ export default class Register extends Component {
         Alert.alert("Registered Successfully")
         this.setState({phone_no:'',password:''})
     }
+}else{
+    Alert.alert("Fields are required")
+}
+
        })
     
       .catch(err=>{

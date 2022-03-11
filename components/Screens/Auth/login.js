@@ -31,14 +31,15 @@ export default class Login extends Component {
     
 
      
-    
-    
+   
 
     Login =async ()=>{
         await db().then(res=>{
         let is_exist= res.objects("Users").filtered(`phone_number== '${this.state.phone_no}' && password== '${this.state.password}'`).length
         let user = res.objects("Users").filtered(`phone_number== '${this.state.phone_no}' && password== '${this.state.password}'`)
-       if(is_exist == 1){
+        if(this.state.phone_no.length>0 && this.state.password.length>0){
+
+        if(is_exist == 1){
          
         AsyncStorage.setItem("user",JSON.stringify(user[0]))
         .then(()=>{
@@ -52,8 +53,17 @@ export default class Login extends Component {
        }else{
         Alert.alert("Invalid Phone Number or Password")
        }
+    }else{
+        Alert.alert("Fields are required")
+    }
+
+        })
+        .catch(err=>{
+            Alert.alert("Something Went Wrong")
         })
     }
+
+   
 
     render(){
         return(

@@ -50,31 +50,9 @@ export default class Home extends Component {
         })
         
     }
-    InsertTodo = async()=>{
-        const user = await AsyncStorage.getItem('user')
-        const parse = JSON.parse(user)
-       
-        db().then(res=>{
-            res.write(()=>{
-                res.create('Todos',{
-                    _id:ObjectID(),
-                    created_by:parse._id,
-                    priority:"Do it",
-                    expected_date:'20/20'
-                })
-                console.log("Inserted Successfully")
-            })
-        })
-    }
+  
 
 
-    RemoveAllTodos = async()=>{
-        await db().then(res=>{
-            res.write(()=>{
-                res.deleteAll()
-            })
-        })
-    }
 
     complete_work = async(id)=>{
         await db().then(res=>{
@@ -98,9 +76,12 @@ export default class Home extends Component {
     }
 
     componentDidMount(){
-        // this.InsertTodo()
         this.getAlltodos()
-        // this.RemoveAllTodos()
+
+       this.props.navigation.addListener("focus",()=>{
+           this.getAlltodos()
+       })
+      
     }
     render(){
         return(

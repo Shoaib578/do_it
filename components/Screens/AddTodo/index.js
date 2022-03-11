@@ -36,8 +36,9 @@ export default class AddTodo extends Component {
                     _id:ObjectID(),
                     created_by:parse._id,
                     priority:this.state.priority,
-                    expected_date:this.state.date.toDateString()
+                    expected_date:this.state.date.toLocaleString()
                 })
+                this.setState({priority:''})
                Alert.alert("Inserted Successfully")
             })
         })
@@ -63,14 +64,19 @@ export default class AddTodo extends Component {
 
            
                 </View>
-             <DatePicker date={this.state.date} style={{alignSelf: 'center',marginTop:20}} onDateChange={(date)=>{
-                 this.setState({data:date})
-                 console.log(date)
-             }} />
+             <DatePicker date={this.state.date} style={{alignSelf: 'center',marginTop:20,borderWidth:1,
+                borderColor:"#57b5b6",
+                width:Dimensions.get('window').width*2/2.2,
+                backgroundColor:"#57b5b6",
+                borderRadius:10,
+            }} onDateChange={(date)=>{
+                        this.setState({data:date})
+                        console.log(date)
+                    }} />
  <TouchableOpacity onPress={this.InsertTodo} style={styles.submit_btn}>
             
 
-                <Text style={{color:'white'}}>Add Product</Text>
+                <Text style={{color:'white'}}>Add</Text>
             </TouchableOpacity>
          </View>
         )
