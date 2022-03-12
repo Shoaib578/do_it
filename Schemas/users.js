@@ -1,5 +1,5 @@
 const Users = {
-  
+    title:"Users",
     name:"Users",
     properties: {
         _id:'objectId',

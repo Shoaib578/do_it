@@ -6,27 +6,35 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo'
 import Foundation from 'react-native-vector-icons/Foundation'
 import Users from '../../../Schemas/users'
-import Realm from 'realm';
+import  Realm from 'realm'
 
 var ObjectID = require("bson-objectid");
 
+const config = {
+    id:"do_it-sztkm",
+    timeout:10000
+}
 
-const app = new Realm.App({id:'do-it-ioxms',timeout: 10000})
+const app = new Realm.App(config);
 const credentials = Realm.Credentials.anonymous(); 
 const db = async()=>{
-     await app.logIn(credentials);
-    const configuration = {
+    await app.logIn(credentials);
+    let configuration = {
         schema: [Users], 
       
         sync: {
+          
           user: app.currentUser,
-          partitionValue: "622890eae210279e9fccc51e", 
+          partitionValue: "user", 
         }
       };
-      const realm =await Realm.open(configuration)
-     
+      let realm =await Realm.open(configuration)
       return realm
 }
+
+
+
+
 
 
 
@@ -103,6 +111,9 @@ export default class Register extends Component {
         })
     }
 
+
+   
+    
   
     render(){
         return(

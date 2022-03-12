@@ -10,7 +10,12 @@ import Foundation from 'react-native-vector-icons/Foundation'
 import Users from '../../../Schemas/users';
 
 
-const app = new Realm.App({id:'do-it-ioxms'})
+const config = {
+    id:"do_it-sztkm",
+    timeout:10000
+}
+
+const app = new Realm.App(config);
 const credentials = Realm.Credentials.anonymous(); 
 const db = async()=>{
     const loggedInUser = await app.logIn(credentials);
@@ -20,7 +25,7 @@ const db = async()=>{
 
         sync: {
           user: app.currentUser,
-          partitionValue: "622890eae210279e9fccc51e", 
+          partitionValue: "user", 
         }
       };
       const realm =await Realm.open(configuration)

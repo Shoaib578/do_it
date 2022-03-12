@@ -10,8 +10,16 @@ var ObjectID = require("bson-objectid");
 import DatePicker from 'react-native-date-picker'
 
 
-const app = new Realm.App({id:'do-it-ioxms',timeout: 10000})
+const config = {
+    id:"do_it-sztkm",
+    timeout:10000
+}
+
+const app = new Realm.App(config);
+
 const credentials = Realm.Credentials.anonymous(); 
+
+
 const db = async()=>{
     const loggedInUser = await app.logIn(credentials);
     const configuration = {
@@ -20,7 +28,7 @@ const db = async()=>{
 
         sync: {
           user: app.currentUser,
-          partitionValue: "622890eae210279e9fccc51e", 
+          partitionValue: "user", 
         }
       };
       const realm = Realm.open(configuration)
@@ -29,14 +37,7 @@ const db = async()=>{
 
 
 
-// const db_locale = async()=>{
-//     const realm =await Realm.open({
-//         path:'do-it',
-//         schema:[Todos],
-//         schemaVersion: 21
-//     })
-//     return realm
-// }
+
 
 
 
@@ -52,8 +53,8 @@ export default class AddTodo extends Component {
         const parse = JSON.parse(user)
         
         db().then(res=>{
-            res.write(async()=>{
-              await  res.create("Todos",{
+            res.write(()=>{
+                res.create("Todos",{
                     _id:ObjectID(),
                     created_by:parse._id,
                     priority:this.state.priority,
