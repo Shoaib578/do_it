@@ -1,39 +1,15 @@
 import React,{Component} from 'react'
-import {View,Text,StyleSheet,TouchableOpacity,Dimensions,TextInput,Alert} from 'react-native'
+import {View,Text,StyleSheet,TouchableOpacity,Dimensions,TextInput,Alert,ActivityIndicator} from 'react-native'
 
 import Feather from 'react-native-vector-icons/Feather'
-import Realm from 'realm'
 import Todos from '../../../Schemas/todo'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
-var ObjectID = require("bson-objectid");
+
 import DatePicker from 'react-native-date-picker'
+import firestore from '@react-native-firebase/firestore'
 
 
-const config = {
-    id:"do_it-sztkm",
-    timeout:10000
-}
-
-const app = new Realm.App(config);
-
-const credentials = Realm.Credentials.anonymous(); 
-
-
-const db = async()=>{
-    const loggedInUser = await app.logIn(credentials);
-    const configuration = {
-        schema: [Todos], 
-       
-
-        sync: {
-          user: app.currentUser,
-          partitionValue: "user", 
-        }
-      };
-      const realm = Realm.open(configuration)
-      return realm
-}
 
 
 
@@ -45,33 +21,43 @@ export default class AddTodo extends Component {
    
     state = {
         date:new Date(),
-        title:''
+        title:'',
+        priority:'',
+        isLoading:false
     }
     
-    InsertTodo = async()=>{
-        const user = await AsyncStorage.getItem('user')
+   
+
+    AddTodo = async()=>{
+        const user = await AsyncStorage.getItem("user")
         const parse = JSON.parse(user)
-        
-        db().then(res=>{
-            res.write(()=>{
-                res.create("Todos",{
-                    _id:ObjectID(),
-                    created_by:parse._id,
-                    priority:this.state.priority,
-                    expected_date:this.state.date.toLocaleString(),
-                    title:this.state.title
-                })
-                this.setState({priority:'',title:''})
-               Alert.alert("Inserted Successfully")
+        this.setState({isLoading:true})
+        firestore().collection('todos')
+        .add({
+          
+           title:this.state.title,
+           priority:this.state.priority,
+           expected_date:this.state.date.toLocaleString(),
+           created_by:parse.id
+
+        })
+        .then(res=>{
+            this.setState({
+                title:'',
+                priority:'',
+               
             })
+            Alert.alert("Todo Has Been Added")
+        this.setState({isLoading:false})
+
+
         })
         .catch(err=>{
-            console.log(err)
             Alert.alert("Something Went Wrong")
+        this.setState({isLoading:false})
+
         })
     }
-
-
 
 
 
@@ -107,7 +93,10 @@ export default class AddTodo extends Component {
                         this.setState({date:date})
                         console.log(date)
                     }} />
- <TouchableOpacity onPress={this.InsertTodo} style={styles.submit_btn}>
+
+                {this.state.isLoading?<ActivityIndicator size="large" color="white" style={{ alignSelf: 'center' }}/>:null}
+
+ <TouchableOpacity onPress={this.AddTodo} style={styles.submit_btn}>
             
 
                 <Text style={{color:'white'}}>Add</Text>

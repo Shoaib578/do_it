@@ -6,34 +6,8 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo'
 import Foundation from 'react-native-vector-icons/Foundation'
 import Users from '../../../Schemas/users'
-import  Realm from 'realm'
 
-var ObjectID = require("bson-objectid");
-
-const config = {
-    id:"do_it-sztkm",
-    timeout:10000
-}
-
-const app = new Realm.App(config);
-const credentials = Realm.Credentials.anonymous(); 
-const db = async()=>{
-    await app.logIn(credentials);
-    let configuration = {
-        schema: [Users], 
-      
-        sync: {
-          
-          user: app.currentUser,
-          partitionValue: "user", 
-        }
-      };
-      let realm =await Realm.open(configuration)
-      return realm
-}
-
-
-
+import firestore from '@react-native-firebase/firestore'
 
 
 
@@ -44,7 +18,7 @@ export default class Register extends Component {
     state = {
         phone_no:"",
         password:"",
-        is_loading:false
+        isLoading:false
     }   
 
     validate = ()=>{
@@ -70,49 +44,56 @@ export default class Register extends Component {
         return true
     }
 
-    SignUp = async()=>{
-
-       await db().then(res=>{
-        
-       let is_exist= res.objects("Users").filtered(`phone_number== '${this.state.phone_no}'`).length
-      
-
-       if(is_exist == 1){
-        Alert.alert("Phone Number Already Exist Please Try Another One")
-        
-       }else{
-        res.write(()=>{
-                  res.create("Users",{
-                  phone_number:this.state.phone_no,
-                 password:this.state.password,
-                _id:ObjectID()
-                  })
-       
-        })
-        Alert.alert("Registered Successfully")
-        this.setState({phone_no:'',password:''})
-    }
-
-
-       })
     
-      .catch(err=>{
-            Alert.alert("Something Went Wrong")
-            console.log(err)
-         })
-    }
+    SignUp = ()=> {
+       let is_validated = this.validate()
 
-    RemoveAllusers = async()=>{
-        await db().then(res=>{
-            res.write(()=>{
-                res.deleteAll()
-                console.log("Deleted")
-            })
+        if(is_validated){
+
+        this.setState({isLoading:true})
+        firestore().collection('users').where("phone_no",'==',this.state.phone_no).get()
+        .then(res=>{
+            if(res.size <1){
+                
+              
+                    firestore().collection('users')
+                    .add({
+                      
+                       
+                        password:this.state.password,
+                     
+                        phone_no:this.state.phone_no,
+                      
+     
+                    })
+                    .then(res=>{
+                        this.setState({isLoading:false,
+                          
+                            password:'',
+                          
+                            phone_no:''
+                        })
+                        
+                        Alert.alert("Registered Successfully")
+                    
+                   
+                })
+              
+            }else{
+                this.setState({isLoading:false})
+
+                Alert.alert("Email Already Exist Please Try Another One")
+                return false
+            }
+        })
+        .catch(err=>{
+            console.log(err)
+            this.setState({isLoading:false})
+            Alert.alert("Something Went Wrong")
         })
     }
 
-
-   
+    }
     
   
     render(){
@@ -141,14 +122,9 @@ export default class Register extends Component {
                 />
                 </View>
 
-                {this.state.is_loading?<ActivityIndicator size="large" color="white" style={{ alignSelf: 'center' }}/>:null}
+                {this.state.isLoading?<ActivityIndicator size="large" color="white" style={{ alignSelf: 'center' }}/>:null}
 
-                <TouchableOpacity onPress={()=>{
-                    let is_validated = this.validate()
-                    if(is_validated){
-                        this.SignUp()
-                    }
-                }} style={styles.submit_btn} >
+                <TouchableOpacity onPress={this.SignUp} style={styles.submit_btn} >
                     
                     <Text style={{ fontSize:16,fontWeight:'bold',color:'#57b5b6'}}>Sign Up</Text>
                 </TouchableOpacity>

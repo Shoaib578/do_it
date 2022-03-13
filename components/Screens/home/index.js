@@ -1,92 +1,53 @@
 import React,{Component} from 'react'
-import {View,Text,StyleSheet,TouchableOpacity,Dimensions} from 'react-native'
+import {View,Text,StyleSheet,TouchableOpacity,Dimensions,ActivityIndicator} from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import Entypo from 'react-native-vector-icons/Entypo'
-import Realm from 'realm'
+
 import Todos from '../../../Schemas/todo'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Users from '../../../Schemas/users'
 import  Swipeable  from 'react-native-gesture-handler/Swipeable'
-var ObjectID = require("bson-objectid");
 
-const config = {
-    id:"do_it-sztkm",
-    timeout:10000
-}
+import firestore from '@react-native-firebase/firestore'
 
-const app = new Realm.App(config);
-const credentials = Realm.Credentials.anonymous(); 
-const db = async()=>{
-    const loggedInUser = await app.logIn(credentials);
-    const configuration = {
-        schema: [Todos], 
-      
-      
-        sync: {
-          user: app.currentUser,
-          partitionValue: "user", 
-        }
-      };
-      const realm =await Realm.open(configuration)
-      return realm
-}
-
-
-// const db = async()=>{
-//     const realm =await Realm.open({
-//         path:'do-it',
-//         schema:[Todos],
-//         schemaVersion: 21
-//     })
-//     return realm
-// }
 
 export default class Home extends Component {
     state = {
-        todos:[]
+        todos:[],
+        isLoading:true
     }
+    
+  
+    
     getAlltodos = async()=>{
-        const user = await AsyncStorage.getItem('user')
+        const user = await AsyncStorage.getItem("user")
         const parse = JSON.parse(user)
         
-        db().then(res=>{
+        firestore().collection("todos").where("created_by","==",parse.id).get()
+        .then(res=>{
            
-       let todos= res.objects("Todos").filtered(`created_by=='${parse._id}'`)
-        this.setState({todos: todos})
-
-           
+            this.setState({todos:res._docs},()=>{
+                this.setState({isLoading:false})
+            })
             
         })
-    }
 
-    logout = async()=>{
-        await AsyncStorage.removeItem('user')
+
+    }
+    complete_work = (id)=>{
+     
+        firestore().collection("todos").doc(id).delete()
         .then(res=>{
-            this.props.navigation.reset({
-                index: 0,
-                routes:[{name:'login'}],
-            });
-        })
-        
-    }
-  
-
-
-
-    complete_work = async(id)=>{
-        await db().then(res=>{
-            res.write(()=>{
-              res.delete(res.objectForPrimaryKey("Todos",id))
-               this.getAlltodos()
-            })
+            
+            this.getAlltodos()
         })
         .catch(err=>{
             Alert.alert("Something Went Wrong")
         })
     }
-
+   
     Swipe = (id)=>{
       
         return(
@@ -106,6 +67,8 @@ export default class Home extends Component {
       
     }
     render(){
+        if(this.state.isLoading == false){
+            
         return(
            <ScrollView style={styles.container}>
                <View style={{marginTop:20,marginLeft:'80%',flexDirection:'row'}}>
@@ -121,21 +84,21 @@ export default class Home extends Component {
                </View>
 
                {this.state.todos.map((data,index)=>{
-                   return <Swipeable renderLeftActions={()=>this.Swipe(data._id)} key={index}>
+                   return <Swipeable renderLeftActions={()=>this.Swipe(data.id)} key={index}>
                        <View  style={styles.todoContainer}>
-                   <Text style={{left:5,fontSize:18}}>{data.title}</Text>
+                   <Text style={{left:5,fontSize:18}}>{data._data.title}</Text>
                    <View style={{borderColor:'white',borderWidth:.2,marginTop:2}}></View>
 
                    <View style={{flexDirection:'row'}}>
                    <MaterialIcons name="work" color="white" size={20}/>
-                   <Text style={{left:10}}>{data.priority}</Text>
+                   <Text style={{left:10}}>{data._data.priority}</Text>
    
                    </View>
                 <View style={{borderColor:'white',borderWidth:.2,marginTop:2}}></View>
    
                    <View style={{flexDirection:'row',marginRight:3,marginTop:8}}>
                    <Entypo name="clock" color="white" size={20}/>
-                   <Text style={{left:10}}>{data.expected_date}</Text>
+                   <Text style={{left:10}}>{data._data.expected_date}</Text>
    
                    </View>
    
@@ -153,6 +116,14 @@ export default class Home extends Component {
 
            </ScrollView>
         )
+    }else{
+        return(
+            <View style={styles.container}>
+                <ActivityIndicator size="large" color="black" style={{alignSelf: 'center',marginTop: 30}}/>
+            </View>
+        )
+    }
+
     }
 }
 

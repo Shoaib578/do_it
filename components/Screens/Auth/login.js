@@ -1,47 +1,15 @@
 import React,{Component} from 'react';
-import {View,Text,StyleSheet,ScrollView,SafeAreaView,Dimensions,TextInput,TouchableOpacity,Alert,} from 'react-native'
+import {View,Text,StyleSheet,ScrollView,SafeAreaView,Dimensions,TextInput,TouchableOpacity,Alert,ActivityIndicator} from 'react-native'
 import validator from 'validator';
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import Realm from 'realm';
 import Feather from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo'
 import Foundation from 'react-native-vector-icons/Foundation'
 import Users from '../../../Schemas/users';
+import firestore from '@react-native-firebase/firestore'
 
 
-const config = {
-    id:"do_it-sztkm",
-    timeout:10000
-}
-
-const app = new Realm.App(config);
-const credentials = Realm.Credentials.anonymous(); 
-const db = async()=>{
-    const loggedInUser = await app.logIn(credentials);
-    const configuration = {
-        schema: [Users], 
-     
-
-        sync: {
-          user: app.currentUser,
-          partitionValue: "user", 
-        }
-      };
-      const realm =await Realm.open(configuration)
-      return realm
-}
-
-
-
-// const db = async()=>{
-//     const realm =await Realm.open({
-//         path:'do-it.realm',
-//         schema:[Users],
-//         schemaVersion: 17
-//     })
-//     return realm
-// }
 
 
 export default class Login extends Component {
@@ -49,7 +17,7 @@ export default class Login extends Component {
       
         phone_no:"",
         password:"",
-        is_loading:false
+        isLoading:false
     }
     
 
@@ -77,36 +45,64 @@ export default class Login extends Component {
         return true
     }
 
-    Login =async ()=>{
-        await db().then(res=>{
-        let is_exist= res.objects("Users").filtered(`phone_number== '${this.state.phone_no}' && password== '${this.state.password}'`).length
-        let user = res.objects("Users").filtered(`phone_number== '${this.state.phone_no}' && password== '${this.state.password}'`)
-        
 
-        if(is_exist == 1){
-         
-        AsyncStorage.setItem("user",JSON.stringify(user[0]))
-        .then(()=>{
-           
-            this.props.navigation.reset({
-                index: 0,
-                routes:[{name:'home'}],
-            });
-        })
-        
-       }else{
-        Alert.alert("Invalid Phone Number or Password")
-       }
+
+    Login = ()=>{
+        let is_validated = this.validate()
+
+        if(is_validated){
+            this.setState({isLoading:true})
+
+        firestore()
+        .collection('users')
+        .where('phone_no', '==', this.state.phone_no).get()
+        .then(res=>{
+            if(res.size>0){
     
-
+            res._docs.map(async(data)=>{
+               
+                if(data._data.password == this.state.password){
+                    console.log(data.id)
+                    this.setState({isLoading:false,phone_no:'',password:''})
+                    const user = {
+                       
+                        "phone_no":data._data.phone_no,
+                       "password":data._data.password,
+                       "id":data.id
+    
+    
+    
+                    }
+                    
+                    await AsyncStorage.setItem('user',JSON.stringify(user))
+                    this.props.navigation.reset({
+                        index: 0,
+                        routes:[{name:'home'}],
+                    });
+                    
+                }else{
+                 this.setState({isLoading:false,})
+    
+                    Alert.alert("Invalid Email or Password")
+                    return false
+                }
+            })
+        }else{
+            this.setState({isLoading:false})
+    
+            Alert.alert("Invalid Email or Password")
+            return false
+        }
+    
         })
         .catch(err=>{
             Alert.alert("Something Went Wrong")
-            console.log(err)
+            return false
         })
     }
 
-   
+    }
+  
    
     render(){
         return(
@@ -134,15 +130,9 @@ export default class Login extends Component {
                 />
                 </View>
 
-                {this.state.is_loading?<ActivityIndicator size="large" color="white" style={{ alignSelf: 'center' }}/>:null}
+                {this.state.isLoading?<ActivityIndicator size="large" color="white" style={{ alignSelf: 'center' }}/>:null}
 
-                <TouchableOpacity onPress={()=>{
-                    
-                    let is_validated = this.validate()
-                    if(is_validated){
-                        this.Login() 
-                    }
-                    }} style={styles.submit_btn} >
+                <TouchableOpacity onPress={this.Login} style={styles.submit_btn} >
                     
                     <Text style={{ fontSize:16,fontWeight:'bold',color:'#57b5b6'}}>Sign In</Text>
                 </TouchableOpacity>
