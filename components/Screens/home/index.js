@@ -16,7 +16,8 @@ import firestore from '@react-native-firebase/firestore'
 export default class Home extends Component {
     state = {
         todos:[],
-        isLoading:true
+        isLoading:true,
+     
     }
     
   
@@ -38,6 +39,7 @@ export default class Home extends Component {
     }
     complete_work = (id)=>{
      
+     
         firestore().collection("todos").doc(id).delete()
         .then(res=>{
             
@@ -48,15 +50,31 @@ export default class Home extends Component {
         })
     }
    
-    Swipe = (id)=>{
+    SwipeLeft = (id)=>{
+       
       
-        return(
-            <TouchableOpacity onPress={()=>this.complete_work(id)} style={styles.SwipeLeft}>
-                <Text style={{color:'white'}}>Complete</Text>
-            </TouchableOpacity>
-        )
+
+            return(
+                <TouchableOpacity onPress={()=>this.complete_work(id)} style={styles.SwipeLeft}>
+                    <Text style={{color:'white'}}>Complete</Text>
+                </TouchableOpacity>
+            )
+        
+
+       
+ 
     }
 
+    logout = async()=>{
+        await AsyncStorage.removeItem("user")
+        this.props.navigation.reset({
+            index: 0,
+            routes:[{name:'login'}],
+        });
+
+    }
+
+    
     componentDidMount(){
         this.getAlltodos()
 
@@ -84,7 +102,7 @@ export default class Home extends Component {
                </View>
 
                {this.state.todos.map((data,index)=>{
-                   return <Swipeable renderLeftActions={()=>this.Swipe(data.id)} key={index}>
+                   return <Swipeable  renderLeftActions={()=>this.SwipeLeft(data.id)} key={index}>
                        <View  style={styles.todoContainer}>
                    <Text style={{left:5,fontSize:18}}>{data._data.title}</Text>
                    <View style={{borderColor:'white',borderWidth:.2,marginTop:2}}></View>
@@ -130,7 +148,8 @@ export default class Home extends Component {
 const styles = StyleSheet.create({
     container: {
         backgroundColor:'#ADD8E6',
-        flex: 1
+        flex: 1,
+        paddingBottom:10
         
     },
     todoContainer:{

@@ -1,5 +1,5 @@
 import React,{Component} from 'react'
-import {View,Text,StyleSheet,TouchableOpacity,Dimensions,TextInput,Alert,ActivityIndicator} from 'react-native'
+import {View,Text,StyleSheet,TouchableOpacity,Dimensions,TextInput,Platform,Alert,ActivityIndicator} from 'react-native'
 
 import Feather from 'react-native-vector-icons/Feather'
 import Todos from '../../../Schemas/todo'
@@ -9,7 +9,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import DatePicker from 'react-native-date-picker'
 import firestore from '@react-native-firebase/firestore'
 
-
+import NetInfo from "@react-native-community/netinfo";
 
 
 
@@ -26,12 +26,49 @@ export default class AddTodo extends Component {
         isLoading:false
     }
     
-   
+    CheckConnectivity = () => {
+        // For Android devices
+        if (Platform.OS === "android") {
+          NetInfo.fetch().then(isConnected => {
+            if (isConnected) {
+               
+            return true
+            } else {
+               
+
+              return false
+            }
+          });
+        } else {
+          // For iOS devices
+          NetInfo.addEventListener(
+            this.handleFirstConnectivityChange
+          );
+        }
+      };
+    
+      handleFirstConnectivityChange = isConnected => {
+        NetInfo.isConnected.removeEventListener(
+          "connectionChange",
+          this.handleFirstConnectivityChange
+        );
+    
+        if (isConnected === false) {
+          return false
+        } else {
+         return true
+        }
+      };
 
     AddTodo = async()=>{
         const user = await AsyncStorage.getItem("user")
         const parse = JSON.parse(user)
         this.setState({isLoading:true})
+
+        let is_connected = this.CheckConnectivity()
+
+        if(is_connected){
+
         firestore().collection('todos')
         .add({
           
@@ -48,7 +85,7 @@ export default class AddTodo extends Component {
                
             })
             Alert.alert("Todo Has Been Added")
-        this.setState({isLoading:false})
+            this.setState({isLoading:false})
 
 
         })
@@ -57,11 +94,26 @@ export default class AddTodo extends Component {
         this.setState({isLoading:false})
 
         })
+    }else{
+        this.setState({isLoading:true})
+        firestore().collection('todos')
+        .add({
+          
+           title:this.state.title,
+           priority:this.state.priority,
+           expected_date:this.state.date.toLocaleString(),
+           created_by:parse.id
+
+        })
+        Alert.alert("Todo Has Been Added")
+        this.setState({title:'',priority:'',isLoading:false})
+
+
+    }
+
     }
 
 
-
-    
 
    
     render(){
